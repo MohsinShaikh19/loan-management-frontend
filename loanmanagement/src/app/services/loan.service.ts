@@ -23,26 +23,26 @@ export class LoanService {
       ? `${environment.apiUrl}/loans/user/${userId}`
       : `${environment.apiUrl}/loans/user`;
     
-    // this.http.get<Loan[]>(url).subscribe(loans => {
-    //   this.loans.set(loans);
-    // });
-
-    this.http.get<any>(url).subscribe(response => {
-      const extractedLoans: Loan[] = response?.$values || [];
-      this.loans.set(extractedLoans);
+    this.http.get<Loan[]>(url).subscribe(loans => {
+      this.loans.set(loans);
     });
+
+    // this.http.get<any>(url).subscribe(response => {
+    //   const extractedLoans: Loan[] = response?.$values || [];
+    //   this.loans.set(extractedLoans);
+    // });
     
   }
 
   fetchPendingLoans() {
-    // this.http.get<Loan[]>(`${environment.apiUrl}/loans/pending`).subscribe(loans => {
-    //   this.pendingLoans.set(loans);
-    // });
-
-    this.http.get<any>(`${environment.apiUrl}/loans/pending`).subscribe(response => {
-      const extractedLoans: Loan[] = response?.$values || []; // Extract the loans from $values
-      this.loans.set(extractedLoans); // Set the extracted loans
+    this.http.get<Loan[]>(`${environment.apiUrl}/loans/pending`).subscribe(loans => {
+      this.loans.set(loans);
     });
+
+    // this.http.get<any>(`${environment.apiUrl}/loans/pending`).subscribe(response => {
+    //   const extractedLoans: Loan[] = response?.$values || []; // Extract the loans from $values
+    //   this.loans.set(extractedLoans); // Set the extracted loans
+    // });
     
   }
 

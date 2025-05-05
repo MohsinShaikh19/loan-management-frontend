@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Loan, CreateLoanRequest } from '../models/loan.model';
+import { Loan, CreateLoanRequest, PaginatedResponse } from '../models/loan.model';
 import { Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -9,6 +9,13 @@ export class LoanService {
   private http = inject(HttpClient);
   private loans = signal<Loan[]>([]);
   private pendingLoans = signal<Loan[]>([]);
+
+  //Pagination stage
+  private pagination = signal({
+    currentPage : 1,
+    pageSize : 10,
+    totalItems : 0
+  });
 
   getLoans() {
     return this.loans.asReadonly();
@@ -18,32 +25,43 @@ export class LoanService {
     return this.pendingLoans.asReadonly();
   }
 
-  fetchLoans(userId?: string) {
+  getPagination() {
+    return this.pagination.asReadonly();
+  }
+
+  fetchLoans(userId?: string, page: number = 1, pageSize: number = 10) {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+
     const url = userId 
       ? `${environment.apiUrl}/loans/user/${userId}`
       : `${environment.apiUrl}/loans/user`;
     
-    this.http.get<Loan[]>(url).subscribe(loans => {
-      this.loans.set(loans);
-    });
-
-    // this.http.get<any>(url).subscribe(response => {
-    //   const extractedLoans: Loan[] = response?.$values || [];
-    //   this.loans.set(extractedLoans);
-    // });
-    
+    this.http.get<PaginatedResponse<Loan>>(url, { params }).subscribe(response => {
+      this.loans.set(response.items);
+      this.pagination.set({
+        currentPage: response.pageNumber,
+        pageSize: response.pageSize,
+        totalItems: response.totalCount
+      });
+    });  
   }
 
-  fetchPendingLoans() {
-    this.http.get<Loan[]>(`${environment.apiUrl}/loans/pending`).subscribe(loans => {
-      this.loans.set(loans);
-    });
+  fetchPendingLoans(page: number = 1, pageSize: number = 10) {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
 
-    // this.http.get<any>(`${environment.apiUrl}/loans/pending`).subscribe(response => {
-    //   const extractedLoans: Loan[] = response?.$values || []; // Extract the loans from $values
-    //   this.loans.set(extractedLoans); // Set the extracted loans
-    // });
-    
+    this.http.get<PaginatedResponse<Loan>>(`${environment.apiUrl}/loans/pending`, { params })
+      .subscribe(response => {
+        this.loans.set(response.items);
+        this.pagination.set({
+          currentPage: response.pageNumber,
+          pageSize: response.pageSize,
+          totalItems: response.totalCount
+        });
+      });  
   }
 
   createLoan(request: CreateLoanRequest) {

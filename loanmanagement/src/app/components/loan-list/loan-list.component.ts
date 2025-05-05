@@ -8,6 +8,7 @@ import { Router, RouterLink } from '@angular/router';
 import { LoanService } from '../../services/loan.service';
 import { AuthService } from '../../services/auth.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
 
 @Component({
@@ -21,6 +22,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatIconModule,
     RouterLink,
     MatProgressSpinnerModule,
+    MatPaginatorModule
   ],
   templateUrl: './loan-list.component.html',
   styleUrls: ['./loan-list.component.scss']
@@ -32,6 +34,8 @@ export class LoanListComponent implements OnInit {
 
   displayedColumns = ['id', 'amount', 'term', 'purpose', 'status', 'actions'];
   loans = this.loanService.getLoans();
+  pendingLoans = this.loanService.getPendingLoans();
+  pagination = this.loanService.getPagination();
   isAdmin = this.authService.isAdmin;
 
   ngOnInit(): void {
@@ -53,5 +57,16 @@ export class LoanListComponent implements OnInit {
 
   rejectLoan(loanId: number) {
     this.loanService.rejectLoan(loanId).subscribe();
+  }
+
+  onPageChange(event: PageEvent) {
+    const page = event.pageIndex + 1; // Material paginator is 0-based
+    const pageSize = event.pageSize;
+    
+    if (this.isAdmin()) {
+      this.loanService.fetchPendingLoans(page, pageSize);
+    } else {
+      this.loanService.fetchLoans("", page, pageSize);
+    }
   }
 }

@@ -77,6 +77,14 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
+        
+        <mat-paginator [length]="pagination().totalItems"
+           [pageSize]="pagination().pageSize"
+           [pageIndex]="pagination().currentPage - 1"
+           [pageSizeOptions]="[5, 10, 25, 100]"
+           (page)="onPageChange($event)"
+           aria-label="Select page">
+        </mat-paginator>
         <!-- <mat-paginator [length]="totalLoans" [pageSize]="pageSize" [pageSizeOptions]="[2, 5, 10]" (page)="onPageChange($event)">
         </mat-paginator> -->
       } @else {
